@@ -1,0 +1,7 @@
+description = "Critique the current feature"
+prompt = """
+1. Review and critique the diff between this branch and `main`. Consider any areas where you are violating DRY, YAGNI, clear naming and comments for complicated or non-obvious bits code, and other best practices.
+2. Share the list of issues you've found, prioritized by high/medium/low.
+3. Address all of the high/medium-priority issues you identified, and any low-priority issues with simple fixes.
+4. Ensure `npm run {lint,check,test}` all pass; re-run all if you make any changes to address an issue.
+"""

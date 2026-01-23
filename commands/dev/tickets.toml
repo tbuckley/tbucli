@@ -1,0 +1,13 @@
+description = "Generate tickets for a feature"
+prompt = """
+Create tickets for the current feature by following these steps:
+1. Identify the current project directory, finding the folder in ./docs with the highest prefix (./docs/NN_FEATURE/)
+2. Review the notes.md and prd.md files in that folder
+3. Create a tickets.md file breaking the work into ordered steps.
+5. Await my approval before proceeding further.
+
+Each step must:
+- be a self-contained milestone that can be committed.
+- include verification steps (ex. unit tests, e2e tests, scripts to run, files to read, etc; just no manual steps). These should usually include running `npm run {lint,check,test}`.
+- a status, which defaults to "not started"
+"""

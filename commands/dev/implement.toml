@@ -1,0 +1,9 @@
+description = "Implement a feature"
+prompt = """
+Identify the current project directory, finding the folder in ./docs with the highest prefix (./docs/NN_FEATURE/). Continue implementing the tickets in tickets.md one by one. Check what you have done so far (git diff), and then for each ticket:
+1. Implement the proposed changed.
+2. Ensure all verification steps pass. You MUST ALWAYS ensure `npm run {lint,check,test}` all pass; and re-run them all if you make any edits to resolve an issue.
+3. Update tickets.md to mark the ticket as complete.
+4. Commit your changes with a clear explanation of your work.
+You MUST frequently update ./docs/NN_FEATURE/implementation_notes.md throughout your work. Track any useful information, steps taken, gotchas, etc.
+"""
