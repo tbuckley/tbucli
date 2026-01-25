@@ -19,6 +19,7 @@ gemini extensions update tbucli
 The following environment variables are required for some skills:
 
 - `GEMINI_API_KEY`: Required for `nanobanana` and `deep-research` skills.
+- To use the `google-drive` skill, `gcloud` must be installed and authenticated. See additional notes below if using a sandbox.
 
 ## Commands
 
@@ -37,3 +38,17 @@ These commands help manage the lifecycle of a feature, from PRD to implementatio
 - **nanobanana** - Generate and edit images using Google's latest Gemini image models. Supports text-to-image and image-to-image variations.
 - **deep-research** - Perform in-depth research tasks using the Gemini Deep Research API.
 - **skill-creator** - Helper for creating new Gemini CLI skills.
+- **google-drive** - Download and sync files from Google Drive.
+
+### Google Drive Sandbox Setup
+
+The skill requires access to `~/.config/gcloud` to get your access token. You should include this directory when starting Gemini:
+
+```bash
+gemini --includeDirectories ~/.config/gcloud
+```
+
+_Note: Due to a potential bug in Gemini CLI's usage of the macOS Seatbelt sandbox, this might not be sufficient. You may need a custom sandbox configuration:_
+
+1. Create `~/.gemini/sandbox-macos-gdrive.sb` (based on Gemini CLI's `permissive-open.sb`) and ensure it allows reading/writing `~/.config/gcloud`.
+2. Run with: `SEATBELT_SANDBOX=gdrive gemini --sandbox`
