@@ -14,6 +14,12 @@ To update the extension:
 gemini extensions update tbucli
 ```
 
+## Setup
+
+The following environment variables are required for some skills:
+
+- `GEMINI_API_KEY`: Required for `nanobanana` and `deep-research` skills.
+
 ## Commands
 
 ### `/dev` - Development Workflow
@@ -29,3 +35,5 @@ These commands help manage the lifecycle of a feature, from PRD to implementatio
 ## Skills
 
 - **nanobanana** - Generate and edit images using Google's latest Gemini image models. Supports text-to-image and image-to-image variations.
+- **deep-research** - Perform in-depth research tasks using the Gemini Deep Research API.
+- **skill-creator** - Helper for creating new Gemini CLI skills.
