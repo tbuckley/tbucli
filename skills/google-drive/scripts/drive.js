@@ -3,7 +3,7 @@ const path = require('path');
 const https = require('https');
 const url = require('url');
 
-// Mime Type mappings for Google Workspace files
+// Mime Type mappings for Google Workspace files (Download)
 const EXPORT_MIME_MAP = {
   'application/vnd.google-apps.document': {
     default: 'text/markdown', 
@@ -47,6 +47,29 @@ const EXTENSION_MAP = {
   'application/rtf': '.rtf'
 };
 
+// Mime Type mappings for Local files (Upload)
+const LOCAL_MIME_MAP = {
+  '.md': 'text/markdown',
+  '.csv': 'text/csv',
+  '.txt': 'text/plain',
+  '.html': 'text/html',
+  '.json': 'application/json',
+  '.pdf': 'application/pdf',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.gif': 'image/gif',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+};
+
+// Conversion mappings (Local Ext -> Google Mime)
+const CONVERSION_MAP = {
+  '.md': 'application/vnd.google-apps.document',
+  '.csv': 'application/vnd.google-apps.spreadsheet'
+};
+
 function sanitizeFilename(name) {
   return name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
 }
@@ -65,7 +88,6 @@ function makeRequest(method, requestUrl, headers) {
       let body = '';
       
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        // Handle Redirects (Simple implementation)
         resolve(makeRequest(method, res.headers.location, headers));
         return;
       }
@@ -80,7 +102,6 @@ function makeRequest(method, requestUrl, headers) {
             const json = JSON.parse(body);
             resolve(json);
           } catch (e) {
-            // If response isn't JSON, return raw body
             resolve(body);
           }
         } else {
@@ -97,6 +118,61 @@ function makeRequest(method, requestUrl, headers) {
   });
 }
 
+function uploadFileRequest(method, requestUrl, headers, metadata, fileContentBuffer, mediaMimeType) {
+  return new Promise((resolve, reject) => {
+    const boundary = '-------314159265358979323846';
+    const delimiter = Buffer.from("\r\n--" + boundary + "\r\n");
+    const close_delim = Buffer.from("\r\n--" + boundary + "--");
+
+    const part1 = Buffer.from(
+      'Content-Type: application/json\r\n\r\n' +
+      JSON.stringify(metadata)
+    );
+
+    const part2Header = Buffer.from('Content-Type: ' + mediaMimeType + '\r\n\r\n');
+
+    const multipartRequestBody = Buffer.concat([
+      delimiter,
+      part1,
+      delimiter,
+      part2Header,
+      fileContentBuffer,
+      close_delim
+    ]);
+
+    const parsedUrl = url.parse(requestUrl);
+    const options = {
+      hostname: parsedUrl.hostname,
+      path: parsedUrl.path,
+      method: method,
+      headers: Object.assign({}, headers, {
+        'Content-Type': 'multipart/related; boundary="' + boundary + '"',
+        'Content-Length': multipartRequestBody.length
+      })
+    };
+
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', (chunk) => body += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          try {
+            resolve(JSON.parse(body));
+          } catch (e) {
+            resolve(body);
+          }
+        } else {
+          reject(new Error(`Upload failed (${res.statusCode}): ${body}`));
+        }
+      });
+    });
+
+    req.on('error', (e) => reject(e));
+    req.write(multipartRequestBody);
+    req.end();
+  });
+}
+
 function downloadStream(requestUrl, headers, destinationPath) {
   return new Promise((resolve, reject) => {
     const parsedUrl = url.parse(requestUrl);
@@ -109,7 +185,6 @@ function downloadStream(requestUrl, headers, destinationPath) {
 
     const req = https.request(options, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-         // Follow redirect
          downloadStream(res.headers.location, headers, destinationPath)
            .then(resolve)
            .catch(reject);
@@ -129,7 +204,7 @@ function downloadStream(requestUrl, headers, destinationPath) {
       });
 
       file.on('error', (err) => {
-        fs.unlink(destinationPath, () => reject(err)); // Delete file on error
+        fs.unlink(destinationPath, () => reject(err));
       });
     });
 
@@ -187,15 +262,41 @@ async function main() {
     console.log(`Refreshing file with ID: ${id}`);
     await downloadFile(id, null, filePath, headers);
 
+  } else if (command === 'upload') {
+    const filePath = args[1];
+    if (!filePath) {
+      console.error("Usage: node drive.js upload <filePath>");
+      process.exit(1);
+    }
+    await uploadLocalFile(filePath, null, headers);
+
+  } else if (command === 'update') {
+    const filePath = args[1];
+    if (!filePath) {
+      console.error("Usage: node drive.js update <filePath>");
+      process.exit(1);
+    }
+    
+    const basename = path.basename(filePath);
+    const parts = basename.split('.');
+    if (parts.length < 3) {
+      console.error("Error: Filename does not match the expected format 'Name.ID.ext'. Cannot update.");
+      process.exit(1);
+    }
+    
+    const ext = '.' + parts.pop(); 
+    const id = parts.pop();
+
+    await uploadLocalFile(filePath, id, headers);
+
   } else {
-    console.error("Unknown command. Use 'download' or 'refresh'.");
+    console.error("Unknown command. Use 'download', 'refresh', 'upload', or 'update'.");
     process.exit(1);
   }
 }
 
 async function downloadFile(fileId, requestedFormat, targetPathOverride, headers) {
   try {
-    // 1. Get Metadata
     const metaUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name,mimeType`;
     const meta = await makeRequest('GET', metaUrl, headers);
     
@@ -204,7 +305,6 @@ async function downloadFile(fileId, requestedFormat, targetPathOverride, headers
     let extension = '';
     let exportMimeType = null;
 
-    // 2. Determine download URL
     if (EXPORT_MIME_MAP[mimeType]) {
       const mapping = EXPORT_MIME_MAP[mimeType];
       let targetFormat = requestedFormat || mapping.default;
@@ -224,12 +324,10 @@ async function downloadFile(fileId, requestedFormat, targetPathOverride, headers
       }
 
     } else {
-      // Binary file
       extension = EXTENSION_MAP[mimeType] || path.extname(name) || '';
       downloadUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
     }
 
-    // 3. Construct Filename
     let finalPath;
     if (targetPathOverride) {
       finalPath = targetPathOverride;
@@ -240,12 +338,69 @@ async function downloadFile(fileId, requestedFormat, targetPathOverride, headers
 
     console.log(`Downloading '${name}' (${fileId}) to '${finalPath}'...`);
 
-    // 4. Download
     await downloadStream(downloadUrl, headers, finalPath);
     console.log("Download complete.");
 
   } catch (error) {
     console.error("Error downloading file:", error.message);
+    process.exit(1);
+  }
+}
+
+async function uploadLocalFile(filePath, fileId, headers) {
+  try {
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`File not found: ${filePath}`);
+    }
+
+    const buffer = fs.readFileSync(filePath);
+    const ext = path.extname(filePath).toLowerCase();
+    const basename = path.basename(filePath);
+    
+    const mediaMimeType = LOCAL_MIME_MAP[ext] || 'application/octet-stream';
+    const targetMimeType = CONVERSION_MAP[ext] || null;
+
+    let metadata = {};
+    let url = '';
+    let method = '';
+
+    if (fileId) {
+      console.log(`Updating file ${fileId} with content from '${basename}'...`);
+      method = 'PATCH';
+      url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart&fields=id,name,webViewLink`;
+      metadata = {}; 
+    } else {
+      console.log(`Uploading '${basename}'...`);
+      method = 'POST';
+      url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink';
+      
+      metadata = {
+        name: basename,
+      };
+      
+      if (targetMimeType) {
+        metadata.mimeType = targetMimeType;
+        console.log(`Converting '${ext}' to '${targetMimeType}'...`);
+      }
+    }
+
+    const result = await uploadFileRequest(method, url, headers, metadata, buffer, mediaMimeType);
+    
+    if (fileId) {
+      console.log("Update complete.");
+    } else {
+      console.log("Upload complete.");
+    }
+    
+    if (result.webViewLink) {
+      console.log(`File URL: ${result.webViewLink}`);
+    }
+    if (result.id) {
+        console.log(`File ID: ${result.id}`);
+    }
+
+  } catch (error) {
+    console.error("Error uploading/updating file:", error.message);
     process.exit(1);
   }
 }
