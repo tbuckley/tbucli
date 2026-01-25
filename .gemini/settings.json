@@ -1,0 +1,39 @@
+{
+	"$schema": "https://raw.githubusercontent.com/google-gemini/gemini-cli/main/schemas/settings.schema.json",
+	"tools": {
+		"enableHooks": true,
+		"allowed": [
+			"run_shell_command(ls)",
+			"run_shell_command(cat)",
+			"run_shell_command(echo)",
+			"run_shell_command(grep)",
+			"run_shell_command(find)",
+			"run_shell_command(head)",
+			"run_shell_command(tail)",
+			"run_shell_command(pwd)",
+			"run_shell_command(awk)",
+			"run_shell_command(sort)",
+			"run_shell_command(uniq)",
+			"run_shell_command(rm)",
+			"run_shell_command(mv)",
+			"run_shell_command(mkdir)",
+			"run_shell_command(rmdir)",
+			"run_shell_command(touch)",
+			"run_shell_command(cp)",
+			"run_shell_command(sed)",
+			"run_shell_command(xargs)",
+			"write_file",
+			"replace",
+			"run_shell_command(git status)",
+			"run_shell_command(git diff)",
+			"run_shell_command(git log)",
+			"run_shell_command(git show)",
+			"run_shell_command(git blame)",
+			"run_shell_command(git grep)",
+			"run_shell_command(git add)",
+			"run_shell_command(git commit)",
+			"run_shell_command(git reset)",
+			"run_shell_command(git restore)"
+		]
+	}
+}
