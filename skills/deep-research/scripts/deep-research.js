@@ -18,18 +18,38 @@ if (!command) {
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/interactions';
 
 async function start() {
-  const filename = args[1];
-  const promptParts = args.slice(2);
+  let model = "deep-research-pro-preview-12-2025";
+  let filename = null;
+  const promptParts = [];
+
+  for (let i = 1; i < args.length; i++) {
+    if (args[i] === '--model') {
+      if (i + 1 < args.length) {
+        model = args[i + 1];
+        i++; // Skip the model value
+      } else {
+        console.error("Error: --model flag requires a value.");
+        process.exit(1);
+      }
+    } else {
+      if (!filename) {
+        filename = args[i];
+      } else {
+        promptParts.push(args[i]);
+      }
+    }
+  }
+
   const prompt = promptParts.join(' ');
 
   if (!filename || !prompt) {
-    console.error("Usage: node deep-research.js start <filename> <prompt...>");
+    console.error("Usage: node deep-research.js start <filename> [--model <model>] <prompt...>");
     process.exit(1);
   }
 
   const requestBody = {
     input: prompt,
-    agent: "deep-research-pro-preview-12-2025",
+    agent: model,
     background: true
   };
 
