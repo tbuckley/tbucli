@@ -433,8 +433,57 @@ async function main() {
       const data = await makeRequest('POST', requestUrl, headers, body);
       console.log(JSON.stringify(data, null, 2));
 
+    } else if (command === 'create_tab') {
+      const docId = args[1];
+      let tabTitle = null;
+      let parentTabId = null;
+      let tabIndex = null;
+
+      if (!docId) {
+        console.error("Usage: node docs.js create_tab <docId> [title] [--parentTabId=ID] [--index=N]");
+        process.exit(1);
+      }
+
+      for (let i = 2; i < args.length; i++) {
+        const arg = args[i];
+        if (arg.startsWith('--parentTabId=')) {
+          parentTabId = arg.split('=')[1];
+        } else if (arg.startsWith('--index=')) {
+          tabIndex = parseInt(arg.split('=')[1], 10);
+        } else if (!arg.startsWith('--') && !tabTitle) {
+          tabTitle = arg;
+        }
+      }
+
+      if (!tabTitle) {
+        tabTitle = 'New Tab';
+      }
+
+      const requestObj = {
+        addDocumentTab: {
+          tabProperties: {
+            title: tabTitle
+          }
+        }
+      };
+
+      if (parentTabId) {
+        requestObj.addDocumentTab.tabProperties.parentTabId = parentTabId;
+      }
+
+      if (tabIndex !== null && !isNaN(tabIndex)) {
+        requestObj.addDocumentTab.tabProperties.index = tabIndex;
+      }
+
+      const requestUrl = `https://docs.googleapis.com/v1/documents/${docId}:batchUpdate`;
+      const body = JSON.stringify({
+        requests: [requestObj]
+      });
+      const data = await makeRequest('POST', requestUrl, headers, body);
+      console.log(JSON.stringify(data, null, 2));
+
     } else {
-      console.error("Unknown command. Use 'read', 'tabs', 'create', 'edit', 'comments', 'create_comment', 'reply_comment', 'resolve_comment', or 'insert_image'.");
+      console.error("Unknown command. Use 'read', 'tabs', 'create', 'create_tab', 'edit', 'comments', 'create_comment', 'reply_comment', 'resolve_comment', or 'insert_image'.");
       process.exit(1);
     }
   } catch (error) {

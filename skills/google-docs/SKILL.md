@@ -187,6 +187,20 @@ node skills/google-docs/scripts/docs.js insert_image <DOC_ID> <LOCAL_FILE_PATH> 
 *   `WIDTH` / `HEIGHT`: (Optional) Size in points (PT).
 *   `--tabId`: (Optional) The ID of the tab to insert the image into. If omitted, the image is inserted into the main body of the first tab.
 
+### 10. Create a Tab
+
+Creates a new tab in the document.
+
+**Usage:**
+```bash
+export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
+node skills/google-docs/scripts/docs.js create_tab <DOC_ID> "[TITLE]" [--parentTabId=ID] [--index=N]
+```
+
+*   `TITLE`: (Optional) The title of the new tab. Defaults to "New Tab".
+*   `--parentTabId=ID`: (Optional) The ID of the parent tab to nest the new tab under.
+*   `--index=N`: (Optional) The 0-based index for the tab position.
+
 ## Example Workflow
 
 User: "Read the doc with ID 12345"
