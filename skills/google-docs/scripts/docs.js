@@ -438,9 +438,10 @@ async function main() {
       let tabTitle = null;
       let parentTabId = null;
       let tabIndex = null;
+      let emoji = null;
 
       if (!docId) {
-        console.error("Usage: node docs.js create_tab <docId> [title] [--parentTabId=ID] [--index=N]");
+        console.error("Usage: node docs.js create_tab <docId> [title] [--parentTabId=ID] [--index=N] [--emoji=EMOJI]");
         process.exit(1);
       }
 
@@ -450,6 +451,8 @@ async function main() {
           parentTabId = arg.split('=')[1];
         } else if (arg.startsWith('--index=')) {
           tabIndex = parseInt(arg.split('=')[1], 10);
+        } else if (arg.startsWith('--emoji=')) {
+          emoji = arg.split('=')[1];
         } else if (!arg.startsWith('--') && !tabTitle) {
           tabTitle = arg;
         }
@@ -473,6 +476,10 @@ async function main() {
 
       if (tabIndex !== null && !isNaN(tabIndex)) {
         requestObj.addDocumentTab.tabProperties.index = tabIndex;
+      }
+
+      if (emoji) {
+        requestObj.addDocumentTab.tabProperties.iconEmoji = emoji;
       }
 
       const requestUrl = `https://docs.googleapis.com/v1/documents/${docId}:batchUpdate`;

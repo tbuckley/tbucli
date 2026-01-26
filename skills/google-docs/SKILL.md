@@ -194,12 +194,13 @@ Creates a new tab in the document.
 **Usage:**
 ```bash
 export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
-node skills/google-docs/scripts/docs.js create_tab <DOC_ID> "[TITLE]" [--parentTabId=ID] [--index=N]
+node skills/google-docs/scripts/docs.js create_tab <DOC_ID> "[TITLE]" [--parentTabId=ID] [--index=N] [--emoji=EMOJI]
 ```
 
 *   `TITLE`: (Optional) The title of the new tab. Defaults to "New Tab".
 *   `--parentTabId=ID`: (Optional) The ID of the parent tab to nest the new tab under.
 *   `--index=N`: (Optional) The 0-based index for the tab position.
+*   `--emoji=EMOJI`: (Optional) An emoji to use as the tab icon.
 
 ## Example Workflow
 
