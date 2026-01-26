@@ -17,15 +17,28 @@ This skill allows you to interact with Google Docs to read content, create new d
 
 ### 1. Read a Document
 
-Retrieves the full JSON representation of a Google Doc, including body content, styles, and lists.
+Retrieves the JSON representation of a Google Doc. By default, it returns the content of the first tab. You can optionally specify a `tabId` to retrieve a specific tab's content.
 
 **Usage:**
 ```bash
 export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
+# Read the default (first) tab
 node skills/google-docs/scripts/docs.js read <DOC_ID>
+# Read a specific tab
+node skills/google-docs/scripts/docs.js read <DOC_ID> --tabId=<TAB_ID>
 ```
 
-### 2. Create a Document
+### 2. List Tabs
+
+Lists all tabs in a document, including their titles and `tabId`s. Useful for finding the correct `tabId` to use in an edit request.
+
+**Usage:**
+```bash
+export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
+node skills/google-docs/scripts/docs.js tabs <DOC_ID>
+```
+
+### 3. Create a Document
 
 Creates a new blank Google Doc with the specified title.
 
@@ -35,15 +48,32 @@ export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
 node skills/google-docs/scripts/docs.js create "<TITLE>"
 ```
 
-### 3. Edit a Document (Granular Edits)
+### 4. Edit a Document (Granular Edits)
 
 Performs batch updates on a document. You can insert text, delete text, apply styles, etc.
 You must provide a valid JSON string representing the `requests` array for the `documents.batchUpdate` method.
+
+**Multi-tab Support:** To target a specific tab, include the `tabId` field in the request object. If `tabId` is omitted, the request applies to the first tab (or all tabs for certain request types like `replaceAllText`).
 
 **Usage:**
 ```bash
 export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
 node skills/google-docs/scripts/docs.js edit <DOC_ID> '<JSON_REQUESTS>'
+```
+
+**Example JSON Request (Insert Text into a Specific Tab):**
+```json
+[
+  {
+    "insertText": {
+      "text": "Hello Tab",
+      "location": {
+        "index": 1,
+        "tabId": "TAB_ID_HERE"
+      }
+    }
+  }
+]
 ```
 
 **Example JSON Request (Insert Text):**

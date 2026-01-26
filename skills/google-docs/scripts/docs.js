@@ -63,12 +63,75 @@ async function main() {
     if (command === 'read') {
       const docId = args[1];
       if (!docId) {
-        console.error("Usage: node docs.js read <docId>");
+        console.error("Usage: node docs.js read <docId> [--tabId=<tabId>]");
         process.exit(1);
       }
-      const requestUrl = `https://docs.googleapis.com/v1/documents/${docId}`;
+
+      let tabId = null;
+      for (let i = 2; i < args.length; i++) {
+        if (args[i].startsWith('--tabId=')) {
+          tabId = args[i].split('=')[1];
+        }
+      }
+
+      const requestUrl = tabId 
+        ? `https://docs.googleapis.com/v1/documents/${docId}?includeTabsContent=true`
+        : `https://docs.googleapis.com/v1/documents/${docId}`;
+      
       const data = await makeRequest('GET', requestUrl, headers);
-      console.log(JSON.stringify(data, null, 2));
+
+      if (tabId) {
+        const findTab = (tabs, id) => {
+          for (const tab of tabs) {
+            if (tab.tabId === id) return tab;
+            // The API returns tabProperties with tabId
+            if (tab.tabProperties && tab.tabProperties.tabId === id) return tab;
+            if (tab.childTabs) {
+              const found = findTab(tab.childTabs, id);
+              if (found) return found;
+            }
+          }
+          return null;
+        };
+
+        const targetTab = findTab(data.tabs || [], tabId);
+        if (targetTab) {
+          console.log(JSON.stringify(targetTab, null, 2));
+        } else {
+          console.error(`Error: Tab with ID ${tabId} not found.`);
+          process.exit(1);
+        }
+      } else {
+        console.log(JSON.stringify(data, null, 2));
+      }
+
+    } else if (command === 'tabs') {
+      const docId = args[1];
+      if (!docId) {
+        console.error("Usage: node docs.js tabs <docId>");
+        process.exit(1);
+      }
+      const requestUrl = `https://docs.googleapis.com/v1/documents/${docId}?fields=tabs(tabProperties(tabId,title),childTabs)`;
+      const data = await makeRequest('GET', requestUrl, headers);
+      
+      const listTabs = (tabs, level = 0) => {
+        if (!tabs) return;
+        tabs.forEach(tab => {
+          const indent = '  '.repeat(level);
+          const props = tab.tabProperties || {};
+          console.log(`${indent}- ${props.title || 'Untitled'} (ID: ${props.tabId})`);
+          if (tab.childTabs) {
+            listTabs(tab.childTabs, level + 1);
+          }
+        });
+      };
+      
+      if (data.tabs) {
+        console.log(`Tabs in document ${docId}:`);
+        listTabs(data.tabs);
+      } else {
+        console.log("No tabs found or document does not support tabs.");
+      }
 
     } else if (command === 'create') {
       const title = args[1] || 'Untitled Document';
@@ -168,7 +231,7 @@ async function main() {
       console.log(JSON.stringify(data, null, 2));
 
     } else {
-      console.error("Unknown command. Use 'read', 'create', 'edit', 'comments', 'create_comment', 'reply_comment', or 'resolve_comment'.");
+      console.error("Unknown command. Use 'read', 'tabs', 'create', 'edit', 'comments', 'create_comment', 'reply_comment', or 'resolve_comment'.");
       process.exit(1);
     }
   } catch (error) {
