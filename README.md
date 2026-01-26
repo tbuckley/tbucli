@@ -19,7 +19,7 @@ gemini extensions update tbucli
 The following environment variables are required for some skills:
 
 - `GEMINI_API_KEY`: Required for `nanobanana` and `deep-research` skills.
-- To use the `google-drive` skill, `gcloud` must be installed and authenticated. See additional notes below if using a sandbox.
+- To use the `google-drive` and `google-docs` skills, `gcloud` must be installed and authenticated. See additional notes below if using a sandbox.
 
 > **Note:** If you are running in a sandbox, you should allowlist the `export`, `gcloud`, and `node` commands to run the scripts.
 
@@ -41,10 +41,11 @@ These commands help manage the lifecycle of a feature, from PRD to implementatio
 - **deep-research** - Perform in-depth research tasks using the Gemini Deep Research API.
 - **skill-creator** - Helper for creating new Gemini CLI skills.
 - **google-drive** - Download and sync files from Google Drive.
+- **google-docs** - Read, create, and edit Google Docs and comments. Supports granular editing via API requests.
 
-### Google Drive Sandbox Setup
+### Google Cloud Skills Sandbox Setup (Drive & Docs)
 
-The skill requires access to `~/.config/gcloud` to get your access token. You should include this directory when starting Gemini:
+These skills require access to `~/.config/gcloud` to get your access token. You should include this directory when starting Gemini:
 
 ```bash
 gemini --includeDirectories ~/.config/gcloud
