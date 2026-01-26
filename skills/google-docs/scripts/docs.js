@@ -213,10 +213,10 @@ async function main() {
       
       const listTabs = (tabs, level = 0) => {
         if (!tabs) return;
-        tabs.forEach(tab => {
+        tabs.forEach((tab, index) => {
           const indent = '  '.repeat(level);
           const props = tab.tabProperties || {};
-          console.log(`${indent}- ${props.title || 'Untitled'} (ID: ${props.tabId})`);
+          console.log(`${indent}${index}. ${props.title || 'Untitled'} (ID: ${props.tabId})`);
           if (tab.childTabs) {
             listTabs(tab.childTabs, level + 1);
           }
