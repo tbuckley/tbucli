@@ -55,9 +55,10 @@ Uploads a local file to Google Drive.
 **Usage:**
 ```bash
 export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
-node skills/google-drive/scripts/drive.js upload <LOCAL_FILE_PATH>
+node skills/google-drive/scripts/drive.js upload <LOCAL_FILE_PATH> [--rename]
 ```
 *   `LOCAL_FILE_PATH`: The path to the file you want to upload.
+*   `--rename`: (Optional) If provided, renames the local file to `Name.ID.ext` upon successful upload.
 
 **Output:**
 Prints the new File ID and the WebView Link.

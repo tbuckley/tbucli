@@ -263,12 +263,14 @@ async function main() {
     await downloadFile(id, null, filePath, headers);
 
   } else if (command === 'upload') {
-    const filePath = args[1];
+    const rename = args.includes('--rename');
+    const filePath = args.filter(arg => arg !== '--rename')[1];
+
     if (!filePath) {
-      console.error("Usage: node drive.js upload <filePath>");
+      console.error("Usage: node drive.js upload <filePath> [--rename]");
       process.exit(1);
     }
-    await uploadLocalFile(filePath, null, headers);
+    await uploadLocalFile(filePath, null, headers, rename);
 
   } else if (command === 'update') {
     const filePath = args[1];
@@ -347,7 +349,7 @@ async function downloadFile(fileId, requestedFormat, targetPathOverride, headers
   }
 }
 
-async function uploadLocalFile(filePath, fileId, headers) {
+async function uploadLocalFile(filePath, fileId, headers, rename = false) {
   try {
     if (!fs.existsSync(filePath)) {
       throw new Error(`File not found: ${filePath}`);
@@ -397,6 +399,22 @@ async function uploadLocalFile(filePath, fileId, headers) {
     }
     if (result.id) {
         console.log(`File ID: ${result.id}`);
+        if (rename && !fileId) {
+            const newFileId = result.id;
+            const originalPath = filePath;
+            const dir = path.dirname(originalPath);
+            const originalExt = path.extname(originalPath);
+            const base = path.basename(originalPath, originalExt);
+            const sanitized = sanitizeFilename(base);
+            const newPath = path.join(dir, `${sanitized}.${newFileId}${originalExt}`);
+            
+            try {
+                fs.renameSync(originalPath, newPath);
+                console.log(`Renamed local file to '${newPath}'`);
+            } catch (renameError) {
+                console.error(`Failed to rename local file: ${renameError.message}`);
+            }
+        }
     }
 
   } catch (error) {
