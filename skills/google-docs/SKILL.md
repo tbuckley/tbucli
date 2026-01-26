@@ -99,6 +99,38 @@ export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
 node skills/google-docs/scripts/docs.js comments <DOC_ID>
 ```
 
+### 6. Create a Comment
+
+Creates a new comment on a document.
+
+**Usage:**
+```bash
+export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
+node skills/google-docs/scripts/docs.js create_comment <DOC_ID> "<CONTENT>" [ANCHOR_JSON]
+```
+
+*   `ANCHOR_JSON`: Optional. A JSON string specifying the region of the document to comment on.
+
+### 7. Reply to a Comment
+
+Replies to an existing comment.
+
+**Usage:**
+```bash
+export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
+node skills/google-docs/scripts/docs.js reply_comment <DOC_ID> <COMMENT_ID> "<CONTENT>"
+```
+
+### 8. Resolve a Comment
+
+Resolves a comment.
+
+**Usage:**
+```bash
+export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
+node skills/google-docs/scripts/docs.js resolve_comment <DOC_ID> <COMMENT_ID>
+```
+
 ## Example Workflow
 
 User: "Read the doc with ID 12345"

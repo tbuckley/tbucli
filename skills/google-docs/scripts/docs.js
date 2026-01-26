@@ -119,8 +119,56 @@ async function main() {
       const data = await makeRequest('GET', requestUrl, headers);
       console.log(JSON.stringify(data, null, 2));
 
+    } else if (command === 'create_comment') {
+      const docId = args[1];
+      const content = args[2];
+      const anchor = args[3];
+
+      if (!docId || !content) {
+        console.error("Usage: node docs.js create_comment <docId> <content> [anchor]");
+        process.exit(1);
+      }
+
+      const requestUrl = `https://www.googleapis.com/drive/v3/files/${docId}/comments?fields=*`;
+      const bodyObj = { content: content };
+      if (anchor) {
+        bodyObj.anchor = anchor;
+      }
+      const body = JSON.stringify(bodyObj);
+      const data = await makeRequest('POST', requestUrl, headers, body);
+      console.log(JSON.stringify(data, null, 2));
+
+    } else if (command === 'reply_comment') {
+      const docId = args[1];
+      const commentId = args[2];
+      const content = args[3];
+
+      if (!docId || !commentId || !content) {
+        console.error("Usage: node docs.js reply_comment <docId> <commentId> <content>");
+        process.exit(1);
+      }
+
+      const requestUrl = `https://www.googleapis.com/drive/v3/files/${docId}/comments/${commentId}/replies?fields=*`;
+      const body = JSON.stringify({ content: content });
+      const data = await makeRequest('POST', requestUrl, headers, body);
+      console.log(JSON.stringify(data, null, 2));
+
+    } else if (command === 'resolve_comment') {
+      const docId = args[1];
+      const commentId = args[2];
+
+      if (!docId || !commentId) {
+        console.error("Usage: node docs.js resolve_comment <docId> <commentId>");
+        process.exit(1);
+      }
+
+      const requestUrl = `https://www.googleapis.com/drive/v3/files/${docId}/comments/${commentId}/replies?fields=*`;
+      const body = JSON.stringify({ action: 'resolve' });
+      const data = await makeRequest('POST', requestUrl, headers, body);
+      console.log(JSON.stringify(data, null, 2));
+
     } else {
-      console.error("Unknown command. Use 'read', 'create', 'edit', or 'comments'.");
+      console.error("Unknown command. Use 'read', 'create', 'edit', 'comments', 'create_comment', 'reply_comment', or 'resolve_comment'.");
       process.exit(1);
     }
   } catch (error) {
