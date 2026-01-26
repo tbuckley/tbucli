@@ -115,6 +115,12 @@ async function setFilePublic(fileId, headers) {
   await makeRequest('POST', requestUrl, headers, body);
 }
 
+async function deleteFile(fileId, headers) {
+  const requestUrl = `https://www.googleapis.com/drive/v3/files/${fileId}`;
+  await makeRequest('DELETE', requestUrl, headers);
+  console.log(`Deleted temporary file ${fileId}`);
+}
+
 async function uploadLocalFile(filePath, headers) {
   if (!fs.existsSync(filePath)) {
     throw new Error(`File not found: ${filePath}`);
@@ -233,34 +239,79 @@ async function main() {
 
     } else if (command === 'edit') {
       const docId = args[1];
-      const requestsJson = args[2];
+      let requestsJson = args[2];
       
       if (!docId || !requestsJson) {
-        console.error("Usage: node docs.js edit <docId> <requests_json_string>");
+        console.error("Usage: node docs.js edit <docId> <requests_json_string> [--file-<ID>=<PATH> ...]");
         process.exit(1);
       }
 
-      let requests;
-      try {
-        requests = JSON.parse(requestsJson);
-        // If the user passed just the array, wrap it in the object expected by the API
-        if (Array.isArray(requests)) {
-            // It's just a list of requests, perfect.
-        } else if (requests.requests && Array.isArray(requests.requests)) {
-            requests = requests.requests;
-        } else {
-            // Assume it's a single request object if not an array
-            requests = [requests];
+      const filesToUpload = {};
+      // Parse file arguments
+      for (let i = 3; i < args.length; i++) {
+        const arg = args[i];
+        const match = arg.match(/^--file-(.+)=(.+)$/);
+        if (match) {
+          const id = match[1];
+          const path = match[2];
+          filesToUpload[id] = path;
         }
-      } catch (e) {
-        console.error("Error parsing requests JSON:", e.message);
-        process.exit(1);
       }
 
-      const requestUrl = `https://docs.googleapis.com/v1/documents/${docId}:batchUpdate`;
-      const body = JSON.stringify({ requests: requests });
-      const data = await makeRequest('POST', requestUrl, headers, body);
-      console.log(JSON.stringify(data, null, 2));
+      const uploadedFiles = [];
+
+      try {
+        // Upload files and replace placeholders
+        for (const [id, filePath] of Object.entries(filesToUpload)) {
+          const fileId = await uploadLocalFile(filePath, headers);
+          await setFilePublic(fileId, headers);
+          uploadedFiles.push(fileId);
+          
+          const imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+          const placeholder = `FILE_${id}`;
+          
+          // Replace all occurrences of FILE_<ID> with the URL
+          // Escape the placeholder for regex usage
+          const escapedPlaceholder = placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          requestsJson = requestsJson.replace(new RegExp(escapedPlaceholder, 'g'), imageUrl);
+        }
+
+        let requests;
+        try {
+          requests = JSON.parse(requestsJson);
+          if (Array.isArray(requests)) {
+              // It's just a list of requests
+          } else if (requests.requests && Array.isArray(requests.requests)) {
+              requests = requests.requests;
+          } else {
+              requests = [requests];
+          }
+        } catch (e) {
+          console.error("Error parsing requests JSON:", e.message);
+          throw e; // Re-throw to trigger cleanup
+        }
+
+        const requestUrl = `https://docs.googleapis.com/v1/documents/${docId}:batchUpdate`;
+        const body = JSON.stringify({ requests: requests });
+        const data = await makeRequest('POST', requestUrl, headers, body);
+        console.log(JSON.stringify(data, null, 2));
+
+      } catch (error) {
+        console.error("Error during edit operation:", error.message);
+        process.exitCode = 1;
+      } finally {
+        // Cleanup uploaded files
+        if (uploadedFiles.length > 0) {
+            console.log("Cleaning up temporary files...");
+            for (const fileId of uploadedFiles) {
+                try {
+                    await deleteFile(fileId, headers);
+                } catch (cleanupError) {
+                    console.error(`Failed to delete temporary file ${fileId}:`, cleanupError.message);
+                }
+            }
+        }
+      }
 
     } else if (command === 'comments') {
       const docId = args[1];

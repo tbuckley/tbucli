@@ -55,10 +55,15 @@ You must provide a valid JSON string representing the `requests` array for the `
 
 **Multi-tab Support:** To target a specific tab, include the `tabId` field in the request object. If `tabId` is omitted, the request applies to the first tab (or all tabs for certain request types like `replaceAllText`).
 
+**File Injection (New!):** You can upload local files (images, etc.) as part of the edit request.
+- Use the flag `--file-<ID>=<PATH>` to specify a file.
+- In your JSON request, use `FILE_<ID>` as the placeholder for the file's URL.
+- The script will automatically upload the file, make it public, replace the placeholder with the public URL, execute the request, and then delete the temporary file from Drive.
+
 **Usage:**
 ```bash
 export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
-node skills/google-docs/scripts/docs.js edit <DOC_ID> '<JSON_REQUESTS>'
+node skills/google-docs/scripts/docs.js edit <DOC_ID> '<JSON_REQUESTS>' [--file-<ID>=<PATH> ...]
 ```
 
 **Example JSON Request (Insert Text into a Specific Tab):**
@@ -74,6 +79,13 @@ node skills/google-docs/scripts/docs.js edit <DOC_ID> '<JSON_REQUESTS>'
     }
   }
 ]
+```
+
+**Example: Replacing an Image**
+```bash
+node skills/google-docs/scripts/docs.js edit <DOC_ID> \
+  '[{"replaceImage": {"imageObjectId": "kix.abc123xyz", "uri": "FILE_MY_IMG"}}]' \
+  --file-MY_IMG=./new_image.png
 ```
 
 **Example JSON Request (Insert Text):**
