@@ -19,14 +19,13 @@ node nanobanana.js [options] <prompt> [image_path] ...
 
 ## Options
 
-| Flag                            | Description                                                                                    | Default                  |
-| ------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------ |
-| `--model <name>`                | Specifies the Gemini model to use.                                                             | `gemini-2.5-flash-image` |
-| `--aspectRatio`, `--ar <ratio>` | Sets the aspect ratio of the generated image (e.g., `16:9`, `1:1`, `4:3`, `3:4`).              | `undefined`              |
-| `--count <number>`              | Number of images to generate.                                                                  | `undefined`              |
-| `--seed <number>`               | Integer seed for reproducible results.                                                         | `undefined`              |
-| `--imageSize <size>`            | **Requires `gemini-3-pro-image-preview`**. Sets specific image dimensions (e.g., `1024x1024`). | `undefined`              |
-| `--googleSearch`                | **Requires `gemini-3-pro-image-preview`**. Enables Google Search grounding for generation.     | `false`                  |
+- **`--model <name>`**: Specifies the Gemini model to use. (Default: `gemini-2.5-flash-image`)
+- **`--output`, `-o <path>`**: Output filename or directory. (Default: `./nanobanana-outputs`)
+- **`--aspectRatio`, `--ar <ratio>`**: Sets the aspect ratio of the generated image (e.g., `16:9`, `1:1`, `4:3`, `3:4`).
+- **`--count <number>`**: Number of images to generate.
+- **`--seed <number>`**: Integer seed for reproducible results.
+- **`--imageSize <size>`**: **Requires `gemini-3-pro-image-preview`**. Sets specific image dimensions (e.g., `1024x1024`).
+- **`--googleSearch`**: **Requires `gemini-3-pro-image-preview`**. Enables Google Search grounding for generation. (Default: `false`)
 
 ## Constraints
 
@@ -50,7 +49,15 @@ Generate a variation of an existing image.
 node nanobanana.js "A watercolor painting of this scene" ./images/01_Evan_Plays_Drums.png
 ```
 
-### 3. Advanced Generation with Preview Model
+### 3. Intermixed Text & Images (Virtual Try-On)
+
+Provide multiple text and image inputs in sequence to guide the generation.
+
+```bash
+node nanobanana.js "Show this person:" ./person.jpeg "wearing this shirt:" ./shirt.png
+```
+
+### 4. Advanced Generation with Preview Model
 
 Use advanced features like `imageSize` and `googleSearch` with the preview model.
 
@@ -58,12 +65,12 @@ Use advanced features like `imageSize` and `googleSearch` with the preview model
 node nanobanana.js --model gemini-3-pro-image-preview --imageSize 1024x1024 --googleSearch "A realistic image of the latest electric car model"
 ```
 
-### 4. Specific Aspect Ratio and Count
+### 5. Specific Aspect Ratio, Count and Output
 
-Generate 3 portraits with a 9:16 aspect ratio.
+Generate 3 portraits with a 9:16 aspect ratio and save them to a specific directory.
 
 ```bash
-node nanobanana.js --ar 9:16 --count 3 "Portrait of a cypherpunk character"
+node nanobanana.js --ar 9:16 --count 3 --output ./my-portraits/ "Portrait of a cypherpunk character"
 ```
 
 ## Output

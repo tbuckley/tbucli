@@ -18,6 +18,7 @@ let candidateCount = undefined;
 let seed = undefined;
 let useGoogleSearch = false;
 let imageSize = undefined;
+let outputPath = undefined;
 
 for (let i = 0; i < args.length; i++) {
   const arg = args[i];
@@ -61,6 +62,14 @@ for (let i = 0; i < args.length; i++) {
       console.error("Error: --imageSize flag requires a value.");
       process.exit(1);
     }
+  } else if (arg === "--output" || arg === "-o") {
+    if (i + 1 < args.length) {
+      outputPath = args[i + 1];
+      i++;
+    } else {
+      console.error("Error: --output flag requires a value.");
+      process.exit(1);
+    }
   } else if (arg === "--googleSearch") {
     useGoogleSearch = true;
   } else {
@@ -70,14 +79,14 @@ for (let i = 0; i < args.length; i++) {
 
 if (inputs.length === 0) {
   console.error(
-    "Usage: node nanobanana.js [--model <model_name>] [--aspectRatio <ratio>] [--count <number>] [--seed <number>] [--imageSize <size>] [--googleSearch] <text_prompt> <image_path> ..."
+    "Usage: node nanobanana.js [--model <model_name>] [--aspectRatio <ratio>] [--count <number>] [--seed <number>] [--imageSize <size>] [--output <path>] [--googleSearch] <text_prompt> <image_path> ..."
   );
   process.exit(1);
 }
 
-const outputDir = "./nanobanana-outputs";
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir, { recursive: true });
+const defaultOutputDir = "./nanobanana-outputs";
+if (!outputPath && !fs.existsSync(defaultOutputDir)) {
+  fs.mkdirSync(defaultOutputDir, { recursive: true });
 }
 
 // Helper to determine mime type
@@ -183,17 +192,43 @@ async function run() {
       data.candidates[0] &&
       data.candidates[0].content
     ) {
+      let imageIndex = 0;
       for (const part of data.candidates[0].content.parts) {
         if (part.text) {
           console.log(part.text);
         } else if (part.inlineData) {
           const imageData = part.inlineData.data;
           const buffer = Buffer.from(imageData, "base64");
+          
+          let finalPath;
           const uuid = crypto.randomUUID();
-          const fileName = `image-${uuid}.png`;
-          const filePath = path.join(outputDir, fileName);
-          fs.writeFileSync(filePath, buffer);
-          console.log(`Image saved as ${filePath}`);
+
+          if (outputPath) {
+            const ext = path.extname(outputPath);
+            if (ext) {
+              // It's a file path
+              const dir = path.dirname(outputPath);
+              if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+              if (imageIndex === 0 && (!data.candidates[0].content.parts.filter(p => p.inlineData).length > 1 && !candidateCount || candidateCount === 1)) {
+                 finalPath = outputPath;
+              } else {
+                 const name = path.basename(outputPath, ext);
+                 finalPath = path.join(dir, `${name}-${imageIndex + 1}${ext}`);
+              }
+            } else {
+              // It's a directory
+               if (!fs.existsSync(outputPath)) fs.mkdirSync(outputPath, { recursive: true });
+               finalPath = path.join(outputPath, `image-${uuid}.png`);
+            }
+          } else {
+             // Default behavior
+             finalPath = path.join(defaultOutputDir, `image-${uuid}.png`);
+          }
+
+          fs.writeFileSync(finalPath, buffer);
+          console.log(`Image saved as ${finalPath}`);
+          imageIndex++;
         }
       }
     } else {
