@@ -161,6 +161,20 @@ export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
 node skills/google-docs/scripts/docs.js resolve_comment <DOC_ID> <COMMENT_ID>
 ```
 
+### 9. Insert Image from Local File
+
+Uploads a local image file to Google Drive, makes it temporarily accessible, and inserts it into the Google Doc at the specified index. Can target a specific tab.
+
+**Usage:**
+```bash
+export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
+node skills/google-docs/scripts/docs.js insert_image <DOC_ID> <LOCAL_FILE_PATH> <INDEX> [WIDTH] [HEIGHT] [--tabId=TAB_ID]
+```
+
+*   `INDEX`: The 0-based index in the document where the image should be inserted.
+*   `WIDTH` / `HEIGHT`: (Optional) Size in points (PT).
+*   `--tabId`: (Optional) The ID of the tab to insert the image into. If omitted, the image is inserted into the main body of the first tab.
+
 ## Example Workflow
 
 User: "Read the doc with ID 12345"

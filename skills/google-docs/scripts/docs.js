@@ -1,5 +1,16 @@
 const https = require('https');
 const url = require('url');
+const fs = require('fs');
+const path = require('path');
+
+// Mime Type mappings for Local files (Upload)
+const LOCAL_MIME_MAP = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.gif': 'image/gif',
+  '.bmp': 'image/bmp'
+};
 
 function makeRequest(method, requestUrl, headers, body = null) {
   return new Promise((resolve, reject) => {
@@ -41,6 +52,86 @@ function makeRequest(method, requestUrl, headers, body = null) {
     }
     req.end();
   });
+}
+
+function uploadFileRequest(method, requestUrl, headers, metadata, fileContentBuffer, mediaMimeType) {
+  return new Promise((resolve, reject) => {
+    const boundary = '-------314159265358979323846';
+    const delimiter = Buffer.from("\r\n--" + boundary + "\r\n");
+    const close_delim = Buffer.from("\r\n--" + boundary + "--");
+
+    const part1 = Buffer.from(
+      'Content-Type: application/json\r\n\r\n' +
+      JSON.stringify(metadata)
+    );
+
+    const part2Header = Buffer.from('Content-Type: ' + mediaMimeType + '\r\n\r\n');
+
+    const multipartRequestBody = Buffer.concat([
+      delimiter,
+      part1,
+      delimiter,
+      part2Header,
+      fileContentBuffer,
+      close_delim
+    ]);
+
+    const parsedUrl = url.parse(requestUrl);
+    const options = {
+      hostname: parsedUrl.hostname,
+      path: parsedUrl.path,
+      method: method,
+      headers: Object.assign({}, headers, {
+        'Content-Type': 'multipart/related; boundary="' + boundary + '"',
+        'Content-Length': multipartRequestBody.length
+      })
+    };
+
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', (chunk) => body += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          try {
+            resolve(JSON.parse(body));
+          } catch (e) {
+            resolve(body);
+          }
+        } else {
+          reject(new Error(`Upload failed (${res.statusCode}): ${body}`));
+        }
+      });
+    });
+
+    req.on('error', (e) => reject(e));
+    req.write(multipartRequestBody);
+    req.end();
+  });
+}
+
+async function setFilePublic(fileId, headers) {
+  const requestUrl = `https://www.googleapis.com/drive/v3/files/${fileId}/permissions`;
+  const body = JSON.stringify({ role: 'reader', type: 'anyone' });
+  await makeRequest('POST', requestUrl, headers, body);
+}
+
+async function uploadLocalFile(filePath, headers) {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`File not found: ${filePath}`);
+  }
+
+  const buffer = fs.readFileSync(filePath);
+  const ext = path.extname(filePath).toLowerCase();
+  const basename = path.basename(filePath);
+  const mediaMimeType = LOCAL_MIME_MAP[ext] || 'application/octet-stream';
+
+  console.log(`Uploading '${basename}' to Drive...`);
+  const url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,webContentLink';
+  const metadata = { name: basename };
+
+  const result = await uploadFileRequest('POST', url, headers, metadata, buffer, mediaMimeType);
+  console.log(`Uploaded. File ID: ${result.id}`);
+  return result.id;
 }
 
 async function main() {
@@ -230,8 +321,69 @@ async function main() {
       const data = await makeRequest('POST', requestUrl, headers, body);
       console.log(JSON.stringify(data, null, 2));
 
+    } else if (command === 'insert_image') {
+      let tabId = null;
+      const positionalArgs = [];
+      
+      // Parse args starting from index 1 (skipping command name)
+      for (let i = 1; i < args.length; i++) {
+        if (args[i].startsWith('--tabId=')) {
+          tabId = args[i].split('=')[1];
+        } else {
+          positionalArgs.push(args[i]);
+        }
+      }
+
+      const docId = positionalArgs[0];
+      const filePath = positionalArgs[1];
+      const index = parseInt(positionalArgs[2], 10);
+      const width = positionalArgs[3]; // Optional
+      const height = positionalArgs[4]; // Optional
+
+      if (!docId || !filePath || isNaN(index)) {
+        console.error("Usage: node docs.js insert_image <docId> <filePath> <index> [width] [height] [--tabId=TAB_ID]");
+        process.exit(1);
+      }
+
+      // 1. Upload the file to Drive
+      const fileId = await uploadLocalFile(filePath, headers);
+
+      // 2. Make it public so Docs API can read it
+      await setFilePublic(fileId, headers);
+
+      // 3. Construct the image URL
+      const imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+
+      // 4. Create the batchUpdate request
+      const request = {
+        insertInlineImage: {
+          uri: imageUrl,
+          location: {
+            index: index
+          }
+        }
+      };
+      
+      if (tabId) {
+        request.insertInlineImage.location.tabId = tabId;
+      }
+
+      if (width && height) {
+        request.insertInlineImage.objectSize = {
+          height: { magnitude: parseFloat(height), unit: 'PT' },
+          width: { magnitude: parseFloat(width), unit: 'PT' }
+        };
+      }
+
+      const requestUrl = `https://docs.googleapis.com/v1/documents/${docId}:batchUpdate`;
+      const body = JSON.stringify({ requests: [request] });
+      
+      console.log("Inserting image into document...");
+      const data = await makeRequest('POST', requestUrl, headers, body);
+      console.log(JSON.stringify(data, null, 2));
+
     } else {
-      console.error("Unknown command. Use 'read', 'tabs', 'create', 'edit', 'comments', 'create_comment', 'reply_comment', or 'resolve_comment'.");
+      console.error("Unknown command. Use 'read', 'tabs', 'create', 'edit', 'comments', 'create_comment', 'reply_comment', 'resolve_comment', or 'insert_image'.");
       process.exit(1);
     }
   } catch (error) {
