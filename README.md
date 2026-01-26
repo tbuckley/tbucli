@@ -21,6 +21,8 @@ The following environment variables are required for some skills:
 - `GEMINI_API_KEY`: Required for `nanobanana` and `deep-research` skills.
 - To use the `google-drive` skill, `gcloud` must be installed and authenticated. See additional notes below if using a sandbox.
 
+> **Note:** If you are running in a sandbox, you should allowlist the `export`, `gcloud`, and `node` commands to run the scripts.
+
 ## Commands
 
 ### `/dev` - Development Workflow
