@@ -1,7 +1,14 @@
 description = "Critique the current feature"
 prompt = """
-1. Review and critique the diff between this branch and `main`. Consider any areas where you are violating DRY, YAGNI, clear naming and comments for complicated or non-obvious bits code, and other best practices.
-2. Share the list of issues you've found, prioritized by high/medium/low.
-3. Address all of the high/medium-priority issues you identified, and any low-priority issues with simple fixes.
-4. Ensure the checks in `./docs/CHECKS.md` all pass. Re-run all checks if you make any changes to address an issue.
+1. Review the diff between this branch and `main` using `git diff main...HEAD -- ':!docs/*'`.
+2. Critique the diff. Consider any areas where you are violating DRY, YAGNI, clear naming and comments for complicated or non-obvious bits code, and other best practices.
+3. Identify the current project directory, finding the folder in ./docs with the highest prefix (./docs/NN_FEATURE/)
+4. Add the list of issues you identified to ./docs/NN_FEATURE/tickets.md, prioritized by high/medium/low.
+
+For each of the issues you identified:
+1. Implement the proposed changed.
+2. Ensure all verification steps pass.
+3. You MUST ALWAYS ensure the checks in `./docs/CHECKS.md` all pass. Re-run all checks if you make any changes to address an issue.
+4. Update tickets.md to mark the ticket as complete.
+5. Commit your changes with a clear explanation of your work.
 """
