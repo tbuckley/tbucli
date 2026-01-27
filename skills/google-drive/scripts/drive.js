@@ -291,8 +291,66 @@ async function main() {
 
     await uploadLocalFile(filePath, id, headers);
 
+  } else if (command === 'search') {
+    const query = args[1];
+    if (!query) {
+      console.error("Usage: node drive.js search <query> [--limit <number>] [--page-token <token>]");
+      process.exit(1);
+    }
+
+    let limit = 10;
+    let pageToken = null;
+    let showToken = false;
+
+    for (let i = 2; i < args.length; i++) {
+        if (args[i] === '--limit' && args[i+1]) {
+            limit = parseInt(args[i+1], 10);
+            i++;
+        } else if (args[i] === '--page-token') {
+            showToken = true;
+            if (args[i+1] && !args[i+1].startsWith('--')) {
+                pageToken = args[i+1];
+                i++;
+            }
+        }
+    }
+
+    await searchFiles(query, limit, pageToken, headers, showToken);
+
   } else {
-    console.error("Unknown command. Use 'download', 'refresh', 'upload', or 'update'.");
+    console.error("Unknown command. Use 'download', 'refresh', 'upload', 'update', or 'search'.");
+    process.exit(1);
+  }
+}
+
+async function searchFiles(query, limit, pageToken, headers, showToken) {
+  try {
+    const params = new URLSearchParams();
+    params.append('q', query);
+    if (limit) params.append('pageSize', limit);
+    if (pageToken && pageToken !== 'none') params.append('pageToken', pageToken);
+    params.append('fields', 'nextPageToken, files(id, name, mimeType, webViewLink)');
+
+    const requestUrl = `https://www.googleapis.com/drive/v3/files?${params.toString()}`;
+    const data = await makeRequest('GET', requestUrl, headers);
+
+    if (data.files && data.files.length > 0) {
+      console.log(`Found ${data.files.length} files:`);
+      data.files.forEach(file => {
+        console.log(`[${file.id}] ${file.name} (${file.mimeType})`);
+        if (file.webViewLink) console.log(`  Link: ${file.webViewLink}`);
+      });
+    } else {
+      console.log("No files found matching query.");
+    }
+
+    if (showToken && data.nextPageToken) {
+      console.log(`\nNext Page Token: ${data.nextPageToken}`);
+      console.log(`(Use --page-token to fetch the next page)`);
+    }
+
+  } catch (error) {
+    console.error("Error searching files:", error.message);
     process.exit(1);
   }
 }

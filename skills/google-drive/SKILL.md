@@ -1,6 +1,6 @@
 ---
 name: google-drive
-description: Download and sync files from Google Drive. Supports automatic format conversion for Docs, Sheets, and Slides.
+description: Search, download, and sync files with Google Drive. Supports automatic format conversion for Docs, Sheets, and Slides.
 ---
 
 # Google Drive Skill
@@ -76,6 +76,23 @@ node skills/google-drive/scripts/drive.js update <LOCAL_FILENAME>
 ```
 *   `LOCAL_FILENAME`: The path to the local file (must follow the `Name.ID.ext` pattern).
 
+### 5. Search Files
+
+Searches for files in Google Drive using a query string.
+
+**Usage:**
+```bash
+export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
+node skills/google-drive/scripts/drive.js search <QUERY> [--limit N] [--page-token TOKEN]
+```
+*   `QUERY`: The search query (e.g., `"name contains 'Project'"`). See [Drive API Query Grammar](https://developers.google.com/drive/api/guides/search-files#query_string_examples).
+*   `--limit`: (Optional) Max number of results (default 10).
+*   `--page-token`: (Optional) Token for the next page of results. Pass "none" or an empty string to start from the beginning.
+
+**Output:**
+Prints a list of files with their IDs, names, MIME types, and links.
+If you will need more than one page of results, pass `--page-token "none"` so that a `Next Page Token` is printed at the end. That value can be passed to `--page-token` to get the next page.
+
 ## Example Workflow
 
 User: "Download the file 1234abcd"
@@ -93,3 +110,9 @@ Model:
 User: "Update the budget sheet budget_v1.1234abcd.csv"
 Model:
 1.  Run: `export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token) && node skills/google-drive/scripts/drive.js update budget_v1.1234abcd.csv`
+
+User: "Search for 'Quarterly Report'"
+Model:
+1.  Run: `export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token) && node skills/google-drive/scripts/drive.js search "name contains 'Quarterly Report'" --page-token "none"`
+    *(Output contains Next Page Token: `~!!~AI9FV...`)*
+2.  Run: `export GCLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token) && node skills/google-drive/scripts/drive.js search "name contains 'Quarterly Report'" --page-token "~!!~AI9FV..."`
