@@ -2,7 +2,7 @@ description = "Generate a PRD for a feature"
 prompt = """
 Write a detailed PRD for the following feature by following these steps:
 1. Create an appropriate folder at ./docs/NN_FEATURE (ex. ./docs/02_login_page). Use the current highest number.
-2. Research any relevant aspects of the current product by looking through the codebase. Record your findings in a notes.md file in your feature folder. Keep this up to date as you work.
+2. Research any relevant aspects of the current product by looking through the codebase. Record your findings in a notes.md file in your feature folder.
 3. Ask me any questions one-by-one to resolve ambiguities, fill in missing details, or choose between multiple paths. Do not ask anything with an obvious answer or that will not change your final proposal. Record every question and answer to questions.md.
 4. Write ./docs/FEATURE/prd.md to capture the product proposal. Include sections for the vision, product/market background, use cases, and requirements, and any privacy/security/accessibility/etc concerns.
 5. Await my approval before proceeding further.

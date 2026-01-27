@@ -33,8 +33,10 @@ These commands help manage the lifecycle of a feature, from PRD to implementatio
 - `/dev:prd <feature>` - Create a new folder for your feature in `./docs`, then research and write a PRD for it.
 - `/dev:tickets` - Generate a set of implementation tickets based on the PRD.
 - `/dev:implement` - Step through and implement the tickets for a feature.
+- `/dev:append <description>` - Append to the PRD/tickets with a new request.
 - `/dev:bug <description>` - Research and fix a bug with a reproducible case.
 - `/dev:critique` - Review the current changes and suggest improvements based on best practices.
+- `/dev:summarize` - Summarize the current changes between this branch and `main`.
 
 ## Skills
 

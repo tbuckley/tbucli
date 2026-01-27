@@ -1,0 +1,16 @@
+description = "Append to a PRD for a feature"
+prompt = """
+Update the current feature PRD based on the request below by following these steps:
+1. Identify the current project directory, finding the folder in ./docs with the highest prefix (./docs/NN_FEATURE/).
+2. Read the current notes.md, prd.md, and tickets.md files.
+3. Research any relevant aspects of the project for the new request by looking through the codebase. Record your findings in the notes.md file.
+4. Ask me any questions one-by-one to resolve ambiguities, fill in missing details, or choose between multiple paths. Do not ask anything with an obvious answer or that will not change your final proposal. Record every question and answer to questions.md.
+5. Update prd.md to account for the new request. Ensure to consider any privacy/security/accessibility/etc concerns.
+6. Update tickets.md to account for your updates, breaking the work into ordered steps. NEVER remove any completed steps; but you may update/remove steps that have not yet started.
+7. Await my approval before proceeding further.
+
+For tickets.md, each step must:
+- be a self-contained milestone that can be committed.
+- include verification steps (ex. unit tests, e2e tests, scripts to run, files to read, etc; just no manual steps). These should usually include the checks in `./docs/CHECKS.md`.
+- include a status, which defaults to "not started"
+"""
