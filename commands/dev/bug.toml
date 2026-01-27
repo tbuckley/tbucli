@@ -1,14 +1,14 @@
 description = "Fix a bug"
 prompt = """
 Fix the bug described by following these steps:
- 1. Identify the current project directory, finding the folder in ./docs with the highest prefix (./docs/NN_FEATURE/)
- 2. Ensure there is a reproducible way to see the bug.
- 3. Create a heading in development_log.md for this feature. Track all of your hypotheses, notes, and findings (both what works and doesn't work) in this section regularly as you work.
- 4. Review the diff with the main branch. If there are similar cases that work correctly, look at those too.
- 5. Create hypotheses for what might be causing this bug, recording them in development_log.md
- 6. Explore your hypotheses to fix the bug, using your reproducible approach to test if it is fixed.
- 7. If it is still not fixed, come up with more hypotheses. Use logging to inspect what is happening in the code, and web search to check for any documentation or bugs that might help.
- 8. Continue with 2-4 until the bug no longer reproduces, or you have exhausted all ideas.
- 9. Clean up your fix to a minimal change, ensuring the bug still does not reproduce. Add comments if anything was surprising so no one will hit the same issue again.
- 10. Ensure the checks in `./docs/CHECKS.md` all pass. Re-run all checks if you make any changes to address an issue.
- """
+1. Identify the current project directory, finding the folder in ./docs with the highest prefix (./docs/NN_FEATURE/)
+2. Ensure there is a reproducible way to see the bug.
+3. Create a heading in development_log.md for this feature. Track all of your hypotheses, notes, and findings (both what works and doesn't work) in this section regularly as you work.
+4. Review the diff with the main branch. If there are similar cases that work correctly, look at those too.
+5. Create hypotheses for what might be causing this bug, recording them in development_log.md
+6. Explore your hypotheses to fix the bug, using your reproducible approach to test if it is fixed.
+7. If it is still not fixed, come up with more hypotheses. Use logging to inspect what is happening in the code, and web search to check for any documentation or bugs that might help.
+8. Continue with 2-4 until the bug no longer reproduces, or you have exhausted all ideas.
+9. Clean up your fix to a minimal change, ensuring the bug still does not reproduce. Add comments if anything was surprising so no one will hit the same issue again.
+10. Ensure the checks in `./docs/CHECKS.md` all pass. Re-run all checks if you make any changes to address an issue.
+"""
