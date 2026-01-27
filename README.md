@@ -29,9 +29,10 @@ The following environment variables are required for some skills:
 
 These commands help manage the lifecycle of a feature, from PRD to implementation.
 
-- `/dev:prd <feature>` - Research and write a PRD for a new feature.
-- `/dev:tickets <feature>` - Generate a set of implementation tickets based on a PRD.
-- `/dev:implement <feature>` - Step through and implement the tickets for a feature.
+- `/dev:init` - Run once to initialize your project, creating a `./docs` folder and `./docs/CHECKS.md` file
+- `/dev:prd <feature>` - Create a new folder for your feature in `./docs`, then research and write a PRD for it.
+- `/dev:tickets` - Generate a set of implementation tickets based on the PRD.
+- `/dev:implement` - Step through and implement the tickets for a feature.
 - `/dev:bug <description>` - Research and fix a bug with a reproducible case.
 - `/dev:critique` - Review the current changes and suggest improvements based on best practices.
 
