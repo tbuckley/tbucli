@@ -1,0 +1,8 @@
+description = "Ensure checks all pass"
+prompt = """
+Address any checks that are failing:
+1. Identify the current project directory, finding the folder in ./docs with the highest prefix (./docs/NN_FEATURE/).
+2. Ensure the checks in `./docs/CHECKS.md` all pass. Address any errors. Re-run all checks if you make any changes to address an issue.
+
+You MUST frequently update ./docs/NN_FEATURE/development_log.md throughout your work. Track any useful information, steps taken, gotchas, etc.
+"""

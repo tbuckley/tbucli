@@ -35,6 +35,7 @@ These commands help manage the lifecycle of a feature, from PRD to implementatio
 - `/dev:implement` - Step through and implement the tickets for a feature.
 - `/dev:append <description>` - Append to the PRD/tickets with a new request.
 - `/dev:bug <description>` - Research and fix a bug with a reproducible case.
+- `/dev:check` - Run project checks and address any errors.
 - `/dev:critique` - Review the current changes and suggest improvements based on best practices.
 - `/dev:summarize` - Summarize the current changes between this branch and `main`.
 
