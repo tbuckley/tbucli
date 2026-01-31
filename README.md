@@ -48,6 +48,7 @@ These commands help manage the lifecycle of a feature, from PRD to implementatio
 - **skill-creator** - Helper for creating new Gemini CLI skills.
 - **google-drive** - Download and sync files from Google Drive.
 - **google-docs** - Read, create, and edit Google Docs and comments. Supports granular editing via API requests.
+- **ralph-loop** - Trigger a ralph loop when requested. Creates a `.gemini/ralph/state.json` file to track the loop. If experiencing issues, request to cancel the loop or delete this file to exit.
 
 ### Google Cloud Skills Sandbox Setup (Drive & Docs)
 
