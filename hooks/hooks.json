@@ -18,6 +18,12 @@
                 "matcher": "*",
                 "hooks": [
                     {
+                        "name": "ralph-loop",
+                        "type": "command",
+                        "command": "${extensionPath}${/}hooks${/}stop-hook.sh",
+                        "description": "The Ralph infinite loop mechanism"
+                    },
+                    {
                         "name": "afteragent-handler",
                         "type": "command",
                         "command": "${extensionPath}${/}hooks${/}notify-hook.sh \"Gemini CLI completed task\"",
