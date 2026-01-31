@@ -2,6 +2,8 @@
 
 A Gemini CLI extension with commands and skills I find helpful.
 
+It also adds notifications when Gemini requests permission or completes a task.
+
 ## Installation
 
 ```bash

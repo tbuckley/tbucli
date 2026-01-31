@@ -1,0 +1,30 @@
+{
+    "hooks": {
+        "Notification": [
+            {
+                "matcher": "*",
+                "hooks": [
+                    {
+                        "name": "notification-handler",
+                        "type": "command",
+                        "command": "${extensionPath}${/}hooks${/}notify-hook.sh \"Gemini CLI permission request\"",
+                        "timeout": 5000
+                    }
+                ]
+            }
+        ],
+        "AfterAgent": [
+            {
+                "matcher": "*",
+                "hooks": [
+                    {
+                        "name": "afteragent-handler",
+                        "type": "command",
+                        "command": "${extensionPath}${/}hooks${/}notify-hook.sh \"Gemini CLI completed task\"",
+                        "timeout": 5000
+                    }
+                ]
+            }
+        ]
+    }
+}
