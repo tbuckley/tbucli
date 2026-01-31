@@ -3,4 +3,5 @@ prompt = """
 1. Review the diff between this branch and `main` using `git diff main...HEAD -- ':!docs/*'`.
 2. Summarize the changes in a concise, clear, and easy-to-understand way.
 3. After your summary, provide a file-by-file breakdown of the changes. Provide a simple "auto-generated" note for any auto-generated files that were modified.
+4. Finally, create a list of any areas that a reviewer should focus on in the PR review.
 """
