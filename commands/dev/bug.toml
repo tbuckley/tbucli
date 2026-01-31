@@ -11,4 +11,5 @@ Fix the bug described by following these steps:
 8. Continue with 2-4 until the bug no longer reproduces, or you have exhausted all ideas.
 9. Clean up your fix to a minimal change, ensuring the bug still does not reproduce. Add comments if anything was surprising so no one will hit the same issue again.
 10. Ensure the checks in `./docs/CHECKS.md` all pass. Re-run all checks if you make any changes to address an issue.
+11. Commit your changes with a clear explanation of your work.
 """
