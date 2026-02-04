@@ -1,13 +1,21 @@
-description = "Implement a feature"
+description = "Implement a feature using the Ralph loop"
 prompt = """
+Use the Ralph loop.
+
+Args: --completion-promise "ALL DONE"
+Prompt:
+```
 Identify the current project directory, finding the folder in ./docs with the highest prefix (./docs/NN_FEATURE/).
 
-Continue implementing the tickets in tickets.md one by one. Check what you have done so far (git diff), and then for each ticket:
+Implement the next ticket in tickets.md. Check what you have done so far (git diff) and then:
 1. Implement the proposed change.
 2. Ensure all verification steps pass.
 3. You MUST ALWAYS ensure the checks in `./docs/CHECKS.md` all pass. Re-run all checks if you make any changes to address an issue.
 3. Update tickets.md to mark the ticket as complete.
 4. Commit your changes with a clear explanation of your work.
+5. If this was the last ticket, say "ALL DONE"
+6. Stop working and let the user review your changes.
 
 You MUST frequently update ./docs/NN_FEATURE/development_log.md throughout your work. Track any useful information, steps taken, gotchas, etc.
+```
 """

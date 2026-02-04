@@ -49,7 +49,13 @@ if [[ -n "$CURRENT_PROMPT" ]] && [[ "$CURRENT_PROMPT" != *"$ORIGINAL_PROMPT"* ]]
     if [[ -d "$STATE_DIR" ]]; then
         rmdir "$STATE_DIR" 2>/dev/null || true
     fi
-    echo "{\"decision\": \"allow\", \"systemMessage\": \"🚨 Ralph detected a prompt mismatch.\\nExpected: '$ORIGINAL_PROMPT'\\nGot:      '$CURRENT_PROMPT'\"}"
+    jq -n \
+      --arg expected "$ORIGINAL_PROMPT" \
+      --arg got "$CURRENT_PROMPT" \
+      '{
+        decision: "allow",
+        systemMessage: ("🚨 Ralph detected a prompt mismatch.\nExpected: " + $expected + "\nGot:      " + $got)
+      }'
     exit 0
 fi
 
@@ -69,7 +75,14 @@ if [[ -n "$COMPLETION_PROMISE" ]] && [[ "$LAST_MESSAGE" == *"<promise>$COMPLETIO
         rmdir "$STATE_DIR" 2>/dev/null || true
     fi
     log "I found a shiny penny! It says $COMPLETION_PROMISE. The computer is sleeping now."
-    echo '{"decision": "allow", "continue": false, "stopReason": "✅ Ralph found the completion promise: '"$COMPLETION_PROMISE"'", "systemMessage": "✅ Ralph found the completion promise: '"$COMPLETION_PROMISE"'"}'
+    jq -n \
+      --arg promise "$COMPLETION_PROMISE" \
+      '{
+        decision: "allow",
+        continue: false,
+        stopReason: ("✅ Ralph found the completion promise: " + $promise),
+        systemMessage: ("✅ Ralph found the completion promise: " + $promise)
+      }'
     exit 0
 fi
 
@@ -103,13 +116,14 @@ log "I'm doing a circle! Iteration $CURRENT_ITERATION is done."
 ORIGINAL_PROMPT=$(jq -r '.original_prompt' "$STATE_FILE")
 
 # Clear conversation history (LLM memory)
-cat <<EOF
-{
-  "decision": "deny",
-  "reason": "$ORIGINAL_PROMPT",
-  "systemMessage": "🔄 Ralph is starting iteration $NEW_ITERATION...",
-  "clearContext": true
-}
-EOF
+jq -n \
+  --arg reason "$ORIGINAL_PROMPT" \
+  --arg systemMessage "🔄 Ralph is starting iteration $NEW_ITERATION..." \
+  '{
+    decision: "deny",
+    reason: $reason,
+    systemMessage: $systemMessage,
+    clearContext: true
+  }'
 
 exit 0
