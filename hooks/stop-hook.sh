@@ -123,7 +123,9 @@ jq -n \
     decision: "deny",
     reason: $reason,
     systemMessage: $systemMessage,
-    clearContext: true
+    hookSpecificOutput: {
+      clearContext: true
+    }
   }'
 
 exit 0
