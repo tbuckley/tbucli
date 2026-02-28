@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Exit normally if required commands are not available
+if ! command -v osascript &> /dev/null || ! command -v python3 &> /dev/null; then
+    exit 0
+fi
+
 # 1. Read Standard Input (stdin) into a variable
 input=$(cat)
 
