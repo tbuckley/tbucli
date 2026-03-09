@@ -1,0 +1,6 @@
+description = "Generate a walkthrough for a PR"
+prompt = """
+Review the git diff between the current branch and main.
+Then walk me through how to review the code file-by-file before I approve the PR.
+For each file, walk me through the changes or new functions and highlight any specifics I will want to focus on that might be security-sensitive or are core the user experience.
+"""
