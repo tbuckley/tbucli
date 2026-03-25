@@ -2,18 +2,10 @@
 
 A Gemini CLI extension with commands and skills I find helpful.
 
-It also adds notifications when Gemini requests permission or completes a task.
-
 ## Installation
 
 ```bash
-gemini extensions install https://github.com/tbuckley/tbucli
-```
-
-To update the extension:
-
-```bash
-gemini extensions update tbucli
+gemini extensions install https://github.com/tbuckley/tbucli --auto-update
 ```
 
 ## Setup
